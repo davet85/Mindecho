@@ -1,3 +1,28 @@
-.env
+# === Python ===
 __pycache__/
+*.py[cod]
+*.egg-info/
+*.log
+
+# === Environment ===
+.env
+
+# === Local Databases / User Profiles ===
 database/*.json
+
+# === Jupyter / IPython ===
+.ipynb_checkpoints/
+
+# === Streamlit Cache ===
+.streamlit/config.toml
+.streamlit/cache/
+.streamlit/secrets.toml
+
+# === VSCode / IDEs ===
+.vscode/
+.idea/
+*.swp
+
+# === OS Artifacts ===
+.DS_Store
+Thumbs.db

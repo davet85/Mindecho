@@ -1,72 +1,60 @@
+# === modules/onboarding.py ===
 import streamlit as st
-import os
-from dotenv import load_dotenv
-from modules import onboarding, avatar_engine, task_engine, reflection_loop, premium_logic
 
-# === INIT ===
-st.write("🔧 Loading environment...")
-load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    st.error("❌ OpenAI API key missing. Please set it in .env or Streamlit Secrets.")
-    st.stop()
+def run():
+    st.subheader("🚀 Onboarding")
+    name = st.text_input("What's your name?")
+    age = st.number_input("Your age:", min_value=10, max_value=100)
+    email = st.text_input("Email address")
+    sentence = st.text_area("Who are you in one sentence?")
 
-st.write("✅ API Key loaded")
+    if st.button("Complete Onboarding"):
+        st.session_state.user_profile = {
+            "name": name,
+            "age": age,
+            "email": email,
+            "sentence": sentence
+        }
+        st.session_state.onboarding_complete = True
+        st.success("🎉 Onboarding complete!")
 
-# === SESSION STATE SETUP ===
-st.session_state.setdefault("onboarding_complete", False)
-st.session_state.setdefault("user_profile", {})
-st.session_state.setdefault("level", 1)
-st.session_state.setdefault("last_level_up_date", None)
-st.session_state.setdefault("page", "home")
+# === modules/avatar_engine.py ===
+import streamlit as st
 
-st.set_page_config(page_title="MindEcho", layout="centered")
-st.title("🧠 Welcome to MindEcho")
+def run(user_profile):
+    st.subheader("🎭 Assigning Your Avatar")
+    avatar = st.selectbox("Choose your symbolic guide:", [
+        "Observer", "Guardian", "Philosopher", "Healer",
+        "Oracle", "Strategist", "Ledger", "Architect"
+    ])
+    user_profile["avatar"] = avatar
+    st.session_state.user_profile = user_profile
+    st.success(f"✅ Avatar '{avatar}' assigned.")
 
-# === NAVIGATION DEBUG ===
-st.sidebar.title("Navigation")
-if st.button("Debug: Reset All"):
-    st.session_state.clear()
-    st.rerun()
+# === modules/task_engine.py ===
+import streamlit as st
 
-if st.session_state["onboarding_complete"]:
-    with st.sidebar:
-        if st.button("🧩 Tasks"):
-            st.session_state.page = "tasks"
-        if st.button("📈 Daily"):
-            st.session_state.page = "daily"
-        if st.button("📊 Weekly"):
-            st.session_state.page = "weekly"
-        if st.button("💎 Premium"):
-            st.session_state.page = "premium"
+def run(user_profile):
+    st.subheader("📋 Task Engine")
+    st.write("Assigned tasks will appear here.")
+    st.write(f"Your avatar: {user_profile.get('avatar', 'N/A')}")
 
-# === ONBOARDING FLOW ===
-try:
-    if not st.session_state["onboarding_complete"]:
-        st.write("🔹 Running onboarding...")
-        onboarding.run_onboarding()
+# === modules/reflection_loop.py ===
+import streamlit as st
 
-    elif "avatar" not in st.session_state["user_profile"]:
-        st.write("🔹 Running avatar assignment...")
-        avatar_engine.run_avatar_assignment(st.session_state["user_profile"])
+def run_daily():
+    st.subheader("📝 Daily Reflection")
+    reflection = st.text_area("What did you notice about yourself today?")
+    if st.button("Submit Reflection"):
+        st.success("📈 Reflection submitted.")
 
-    elif st.session_state.page == "tasks":
-        st.write("🔹 Running task engine...")
-        task_engine.run_task_engine(st.session_state["user_profile"])
+def run_weekly():
+    st.subheader("📆 Weekly Summary")
+    st.write("Your weekly summary will be generated here.")
 
-    elif st.session_state.page == "daily":
-        st.write("🔹 Running daily reflection...")
-        reflection_loop.run_daily_reflection()
+# === modules/premium_logic.py ===
+import streamlit as st
 
-    elif st.session_state.page == "weekly":
-        st.write("🔹 Running weekly summary...")
-        reflection_loop.run_weekly_summary()
-
-    elif st.session_state.page == "premium":
-        st.write("🔹 Running premium console...")
-        premium_logic.run_premium_dashboard()
-
-    else:
-        st.info("✅ Use the sidebar to begin.")
-except Exception as e:
-    st.error(f"🔥 Uncaught exception: {e}")
+def run():
+    st.subheader("💎 Premium Console")
+    st.write("Premium tools coming soon.")

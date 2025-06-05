@@ -5,11 +5,11 @@ from pathlib import Path
 
 PROFILE_PATH = Path("database/user_profile.json")
 
-def run_premium_dashboard():
-    st.header("🛒 MindEcho Premium Suite")
+def run():
+    st.header("💎 MindEcho Premium Console")
 
-    profile = st.session_state["user_profile"]
-    premium = profile.setdefault("premium", {
+    profile = st.session_state.get("user_profile", {})
+    premium = profile.get("premium", {
         "insight_boost": False,
         "dashboard": False,
         "avatars": [],
@@ -17,28 +17,28 @@ def run_premium_dashboard():
         "rebirths": 0
     })
 
-    # === PREMIUM STATUS OVERVIEW ===
-    st.markdown("### Premium Features Unlocked:")
+    # === Premium Overview ===
+    st.markdown("### 🧩 Unlocked Features")
     for key, value in premium.items():
         st.write(f"- **{key}**: {value}")
 
     st.divider()
+    st.subheader("⚙️ Simulate Premium Feature Use")
 
-    # === MANUAL TOGGLE SIMULATION (for testing unlocks) ===
-    if st.button("Simulate: Unlock Insight Boost Pack"):
+    if st.button("🧠 Unlock Insight Boost"):
         premium["insight_boost"] = True
         st.success("✅ Insight Boost unlocked!")
 
-    if st.button("Simulate: Unlock Premium Avatar 'Daemon'"):
+    if st.button("🎭 Unlock Avatar: Daemon"):
         if "Daemon" not in premium["avatars"]:
             premium["avatars"].append("Daemon")
             st.success("✅ Daemon avatar added!")
 
-    if st.button("Simulate: Use Streak Saver"):
+    if st.button("🔄 Use Streak Saver"):
         premium["streak_saver_used"] += 1
-        st.success("🌀 Streak Saver used. Missed day forgiven.")
+        st.success("🌀 Streak Saver used. One missed day forgiven.")
 
-    if st.button("Simulate: Rebirth Now"):
+    if st.button("♻️ Rebirth Now"):
         premium["rebirths"] += 1
         st.session_state["level"] = 1
         st.session_state["last_level_up_date"] = datetime.now().strftime("%Y-%m-%d")
@@ -47,7 +47,9 @@ def run_premium_dashboard():
         profile["reflections"] = []
         st.success("♻️ Rebirth cycle started.")
 
+    # Update profile and persist
     profile["premium"] = premium
+    st.session_state["user_profile"] = profile
     save_profile(profile)
 
 def save_profile(profile):

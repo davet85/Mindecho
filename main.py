@@ -1,15 +1,17 @@
 import streamlit as st
+import os
 from modules import onboarding, avatar_engine, task_engine, reflection_loop, premium_logic
 
-# === INIT ===
-st.set_page_config(page_title="MindEcho", layout="centered")
-st.title("🧠 Welcome to MindEcho")
-
-# ✅ Use Streamlit Secrets instead of dotenv
+# === API Key Fetch (Hybrid Safe) ===
 try:
     api_key = st.secrets["OPENAI_API_KEY"]
-except KeyError:
-    st.error("❌ Missing OPENAI_API_KEY in Streamlit Secrets.")
+except:
+    from dotenv import load_dotenv
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
+
+if not api_key:
+    st.error("❌ Missing OpenAI API Key. Set it in secrets.toml or .env.")
     st.stop()
 
 # === SESSION STATE ===

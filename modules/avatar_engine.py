@@ -35,17 +35,21 @@ AVATARS = {
     }
 }
 
-def run_avatar_assignment(user_profile):
+def run(user_profile):
     st.header("🧙 Avatar Assignment & Customization")
 
-    # === Auto Assignment ===
-    weakest_domain = min(user_profile["domains"], key=user_profile["domains"].get)
-    avatar = AVATARS.get(weakest_domain, AVATARS["emotional"])
-    
-    st.markdown(f"**Assigned Avatar:** {avatar['id']}")
+    # Auto-select avatar based on lowest scoring domain
+    try:
+        weakest = min(user_profile.get("domains", {"emotional": 0}), key=user_profile["domains"].get)
+        avatar = AVATARS.get(weakest, AVATARS["emotional"])
+    except Exception as e:
+        st.error(f"⚠️ Failed to assign avatar: {e}")
+        return
+
+    st.markdown(f"### Assigned Avatar: **{avatar['id']}**")
     st.markdown(f"*{avatar['descriptor']}*")
 
-    # === Customization ===
+    # Customization options
     st.subheader("🎨 Customize Your Avatar")
     tone = st.selectbox("How should your guide speak to you?", ["Tactical", "Compassionate", "Neutral"])
     voice = st.selectbox("Choose a voice style:", ["Male", "Female", "Androgynous"])
@@ -54,10 +58,10 @@ def run_avatar_assignment(user_profile):
     if st.button("Save Avatar"):
         st.session_state["user_profile"]["avatar"] = {
             "id": avatar["id"],
-            "domain": weakest_domain,
+            "domain": weakest,
             "descriptor": avatar["descriptor"],
             "tone": tone,
             "voice": voice,
             "style": style
         }
-        st.success("✅ Avatar saved.")
+        st.success("✅ Avatar saved successfully.")

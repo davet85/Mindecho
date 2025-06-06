@@ -1,60 +1,55 @@
-# === modules/onboarding.py ===
 import streamlit as st
+from modules import onboarding, avatar_engine, task_engine, reflection_loop, premium_logic
 
-def run():
-    st.subheader("🚀 Onboarding")
-    name = st.text_input("What's your name?")
-    age = st.number_input("Your age:", min_value=10, max_value=100)
-    email = st.text_input("Email address")
-    sentence = st.text_area("Who are you in one sentence?")
+# === INIT ===
+st.set_page_config(page_title="MindEcho", layout="centered")
+st.title("🧠 Welcome to MindEcho")
 
-    if st.button("Complete Onboarding"):
-        st.session_state.user_profile = {
-            "name": name,
-            "age": age,
-            "email": email,
-            "sentence": sentence
-        }
-        st.session_state.onboarding_complete = True
-        st.success("🎉 Onboarding complete!")
+# ✅ Use Streamlit Secrets instead of dotenv
+try:
+    api_key = st.secrets["OPENAI_API_KEY"]
+except KeyError:
+    st.error("❌ Missing OPENAI_API_KEY in Streamlit Secrets.")
+    st.stop()
 
-# === modules/avatar_engine.py ===
-import streamlit as st
+# === SESSION STATE ===
+st.session_state.setdefault("onboarding_complete", False)
+st.session_state.setdefault("user_profile", {})
+st.session_state.setdefault("level", 1)
+st.session_state.setdefault("page", "home")
 
-def run(user_profile):
-    st.subheader("🎭 Assigning Your Avatar")
-    avatar = st.selectbox("Choose your symbolic guide:", [
-        "Observer", "Guardian", "Philosopher", "Healer",
-        "Oracle", "Strategist", "Ledger", "Architect"
-    ])
-    user_profile["avatar"] = avatar
-    st.session_state.user_profile = user_profile
-    st.success(f"✅ Avatar '{avatar}' assigned.")
+# === SIDEBAR ===
+st.sidebar.title("🧭 Navigation")
+if st.sidebar.button("🏁 Restart"):
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+    st.rerun()
 
-# === modules/task_engine.py ===
-import streamlit as st
+if st.session_state["onboarding_complete"]:
+    if st.sidebar.button("🧩 Tasks"):
+        st.session_state.page = "tasks"
+    if st.sidebar.button("📈 Daily Reflection"):
+        st.session_state.page = "daily"
+    if st.sidebar.button("📊 Weekly Summary"):
+        st.session_state.page = "weekly"
+    if st.sidebar.button("💎 Premium Console"):
+        st.session_state.page = "premium"
 
-def run(user_profile):
-    st.subheader("📋 Task Engine")
-    st.write("Assigned tasks will appear here.")
-    st.write(f"Your avatar: {user_profile.get('avatar', 'N/A')}")
-
-# === modules/reflection_loop.py ===
-import streamlit as st
-
-def run_daily():
-    st.subheader("📝 Daily Reflection")
-    reflection = st.text_area("What did you notice about yourself today?")
-    if st.button("Submit Reflection"):
-        st.success("📈 Reflection submitted.")
-
-def run_weekly():
-    st.subheader("📆 Weekly Summary")
-    st.write("Your weekly summary will be generated here.")
-
-# === modules/premium_logic.py ===
-import streamlit as st
-
-def run():
-    st.subheader("💎 Premium Console")
-    st.write("Premium tools coming soon.")
+# === ROUTING ===
+try:
+    if not st.session_state["onboarding_complete"]:
+        onboarding.run()
+    elif "avatar" not in st.session_state["user_profile"]:
+        avatar_engine.run(st.session_state["user_profile"])
+    elif st.session_state.page == "tasks":
+        task_engine.run(st.session_state["user_profile"])
+    elif st.session_state.page == "daily":
+        reflection_loop.run_daily()
+    elif st.session_state.page == "weekly":
+        reflection_loop.run_weekly()
+    elif st.session_state.page == "premium":
+        premium_logic.run()
+    else:
+        st.info("✅ Use the sidebar to begin.")
+except Exception as e:
+    st.error(f"🔥 An error occurred: {e}")
